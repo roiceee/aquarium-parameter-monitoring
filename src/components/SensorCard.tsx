@@ -59,26 +59,28 @@ export function SensorCard({
   const colors = colorClasses[color];
 
   return (
-    <div className="bg-white border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
+    <div className="bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2.5">
           <div
-            className={`${colors.iconBg} ${colors.iconColor} p-2.5 rounded-md`}
+            className={`${colors.iconBg} ${colors.iconColor} p-2 rounded-md`}
           >
-            <Icon className="w-5 h-5" />
+            <Icon className="w-4 h-4" />
           </div>
-          <h3 className="text-sm text-slate-600">{title}</h3>
+          <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
         </div>
         <div className={`${colors.value} text-right`}>
           <div className="flex items-baseline gap-1">
-            <span className="text-2xl">{value.toFixed(decimals)}</span>
-            {unit && <span className="text-sm text-slate-500">{unit}</span>}
+            <span className="text-xl font-semibold">
+              {value.toFixed(decimals)}
+            </span>
+            {unit && <span className="text-xs text-slate-500">{unit}</span>}
           </div>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="bg-slate-100 h-2 rounded-full overflow-hidden mb-3">
+      <div className="bg-slate-100 h-1.5 rounded-full overflow-hidden mb-2">
         <div
           className={`${colors.progress} h-full transition-all duration-300 rounded-full`}
           style={{ width: `${percentage}%` }}
