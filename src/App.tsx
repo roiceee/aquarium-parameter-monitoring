@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { SensorCard } from "./components/SensorCard.tsx";
 import { StatusAlert } from "./components/StatusAlert.tsx";
 import { ThresholdSettings } from "./components/ThresholdSettings.tsx";
-import { UpdatePrompt } from "./components/UpdatePrompt.tsx";
 import { Droplets, Settings } from "lucide-react";
 import type { SensorData, Thresholds } from "./types/index.ts";
 import "./index.css";
@@ -163,7 +162,6 @@ export default function App() {
           </div>
         )}
       </div>
-      <UpdatePrompt />
     </div>
   );
 }
