@@ -26,12 +26,6 @@ export default defineConfig({
             type: "image/png",
           },
           {
-            src: "apple-touch-icon-180x180.png",
-            sizes: "180x180",
-            type: "image/png",
-            purpose: "apple touch icon",
-          },
-          {
             src: "pwa-192x192.png",
             sizes: "192x192",
             type: "image/png",
