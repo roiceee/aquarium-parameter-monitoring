@@ -10,7 +10,6 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       injectRegister: "auto",
-      registerType: "prompt",
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
         cleanupOutdatedCaches: true,
