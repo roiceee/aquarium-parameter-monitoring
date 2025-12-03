@@ -92,7 +92,9 @@ export default function App() {
               <div className="bg-blue-600 p-2 rounded-lg">
                 <Droplets className="w-5 h-5 text-white" />
               </div>
-              <h2 className="text-gray-900 text-xl">Aquarium Monitor</h2>
+              <h2 className="text-gray-900 text-xl font-semibold">
+                Aquarium Monitor
+              </h2>
             </div>
             <Button
               size={"icon-lg"}
