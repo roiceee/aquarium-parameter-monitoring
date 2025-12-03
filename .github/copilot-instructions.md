@@ -113,11 +113,19 @@ pnpm preview      # Preview production build
 
 ## Firebase Integration
 
-- Initialized in `src/lib/firebase.ts` with project config
+- Initialized in `src/lib/firebase.ts` using environment variables
+- Configuration loaded from `.env` file with `VITE_` prefix (required by Vite)
 - **Realtime Database actively used** for sensor data
-- Database path structure: `sensors/{phLevel, temp, tdsLevel}`
+- Database path structure: `sensors/{phLevel, temp, tdsLevel}`, `thresholds/{ph, temperature, tds}`
 - Real-time listener automatically updates UI when data changes
 - Export pattern: `export const database = getDatabase(app)`
+- Utilities in `src/lib/alertUtils.ts` for status computation logic
+
+**Environment Setup**:
+
+- Copy `.env.example` to `.env` and fill in your Firebase credentials
+- All env vars must be prefixed with `VITE_` to be accessible in Vite apps
+- TypeScript types defined in `src/vite-env.d.ts` for proper autocomplete
 - Utilities in `src/lib/alertUtils.ts` for status computation logic
 
 ## Adding New Features

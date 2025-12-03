@@ -3,15 +3,14 @@ import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBwZSGGek_bVCuJw08hgkkpcLc4ybA12Gs",
-  authDomain: "aquarium-monitoring-bd878.firebaseapp.com",
-  databaseURL:
-    "https://aquarium-monitoring-bd878-default-rtdb.asia-southeast1.firebasedatabase.app/",
-  projectId: "aquarium-monitoring-bd878",
-  storageBucket: "aquarium-monitoring-bd878.firebasestorage.app",
-  messagingSenderId: "1037054047078",
-  appId: "1:1037054047078:web:a453f7f04021b85f808ea7",
-  measurementId: "G-5GT6ELH2CQ",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);
