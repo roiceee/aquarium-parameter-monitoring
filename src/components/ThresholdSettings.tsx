@@ -87,7 +87,7 @@ export function ThresholdSettings({
   return (
     <div className="pt-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-gray-900">Threshold Settings</h2>
+        <h2 className="text-gray-900 font-semibold">Threshold Settings</h2>
         <button
           onClick={onClose}
           className="p-2 hover:bg-slate-100 rounded-md transition-colors"
