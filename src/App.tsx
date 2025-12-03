@@ -14,9 +14,9 @@ import { signInAnonymously } from "firebase/auth";
 export default function App() {
   const [showSettings, setShowSettings] = useState(false);
   const [sensorData, setSensorData] = useState<SensorData>({
-    ph: 7.2,
-    temperature: 25.5,
-    tds: 320,
+    ph: 0,
+    temperature: 0,
+    tds: 0,
   });
 
   const [thresholds, setThresholds] = useState<Thresholds>({
@@ -34,9 +34,9 @@ export default function App() {
       const data = snapshot.val();
       if (data) {
         setSensorData({
-          ph: data.phLevel ?? 7.2,
-          temperature: data.temp ?? 25.5,
-          tds: data.tdsLevel ?? 320,
+          ph: data.ph ?? 0,
+          temperature: data.temperature ?? 0,
+          tds: data.tds ?? 0,
         });
       }
     });

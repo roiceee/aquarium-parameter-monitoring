@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Save, X } from "lucide-react";
 import type { Thresholds } from "../types";
+import { Input } from "./ui/input";
 
 interface ThresholdSettingsProps {
   thresholds: Thresholds;
@@ -14,10 +15,33 @@ export function ThresholdSettings({
   onClose,
 }: ThresholdSettingsProps) {
   const [localThresholds, setLocalThresholds] = useState(thresholds);
+  const [errors, setErrors] = useState<{
+    ph?: string;
+    temperature?: string;
+    tds?: string;
+  }>({});
 
   const handleSave = () => {
-    onUpdate(localThresholds);
-    onClose();
+    // Validate all thresholds before saving
+    const newErrors: typeof errors = {};
+
+    if (localThresholds.ph.min >= localThresholds.ph.max) {
+      newErrors.ph = "Minimum must be less than maximum";
+    }
+    if (localThresholds.temperature.min >= localThresholds.temperature.max) {
+      newErrors.temperature = "Minimum must be less than maximum";
+    }
+    if (localThresholds.tds.min >= localThresholds.tds.max) {
+      newErrors.tds = "Minimum must be less than maximum";
+    }
+
+    setErrors(newErrors);
+
+    // Only save if there are no errors
+    if (Object.keys(newErrors).length === 0) {
+      onUpdate(localThresholds);
+      onClose();
+    }
   };
 
   const updateThreshold = (
@@ -25,15 +49,38 @@ export function ThresholdSettings({
     type: "min" | "max",
     value: string
   ) => {
+    // Allow empty string for editing
+    if (value === "") {
+      setLocalThresholds({
+        ...localThresholds,
+        [sensor]: {
+          ...localThresholds[sensor],
+          [type]: 0,
+        },
+      });
+      return;
+    }
+
     const numValue = parseFloat(value);
     if (!isNaN(numValue)) {
-      setLocalThresholds({
+      const newThresholds = {
         ...localThresholds,
         [sensor]: {
           ...localThresholds[sensor],
           [type]: numValue,
         },
-      });
+      };
+      setLocalThresholds(newThresholds);
+
+      // Clear error for this sensor if values are now valid
+      const sensorThresholds = newThresholds[sensor];
+      if (sensorThresholds.min < sensorThresholds.max) {
+        setErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[sensor];
+          return newErrors;
+        });
+      }
     }
   };
 
@@ -59,27 +106,28 @@ export function ThresholdSettings({
               <label className="block text-xs text-slate-500 mb-2">
                 Minimum
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.1"
                 value={localThresholds.ph.min}
                 onChange={(e) => updateThreshold("ph", "min", e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
               <label className="block text-xs text-slate-500 mb-2">
                 Maximum
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.1"
                 value={localThresholds.ph.max}
                 onChange={(e) => updateThreshold("ph", "max", e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
+          {errors.ph && (
+            <p className="text-xs text-red-600 mt-1">{errors.ph}</p>
+          )}
         </div>
 
         {/* Temperature Thresholds */}
@@ -90,31 +138,32 @@ export function ThresholdSettings({
               <label className="block text-xs text-slate-500 mb-2">
                 Minimum
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.1"
                 value={localThresholds.temperature.min}
                 onChange={(e) =>
                   updateThreshold("temperature", "min", e.target.value)
                 }
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
               <label className="block text-xs text-slate-500 mb-2">
                 Maximum
               </label>
-              <input
+              <Input
                 type="number"
                 step="0.1"
                 value={localThresholds.temperature.max}
                 onChange={(e) =>
                   updateThreshold("temperature", "max", e.target.value)
                 }
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
+          {errors.temperature && (
+            <p className="text-xs text-red-600 mt-1">{errors.temperature}</p>
+          )}
         </div>
 
         {/* TDS Thresholds */}
@@ -125,27 +174,28 @@ export function ThresholdSettings({
               <label className="block text-xs text-slate-500 mb-2">
                 Minimum
               </label>
-              <input
+              <Input
                 type="number"
                 step="10"
                 value={localThresholds.tds.min}
                 onChange={(e) => updateThreshold("tds", "min", e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
             <div>
               <label className="block text-xs text-slate-500 mb-2">
                 Maximum
               </label>
-              <input
+              <Input
                 type="number"
                 step="10"
                 value={localThresholds.tds.max}
                 onChange={(e) => updateThreshold("tds", "max", e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
+          {errors.tds && (
+            <p className="text-xs text-red-600 mt-1">{errors.tds}</p>
+          )}
         </div>
       </div>
 
