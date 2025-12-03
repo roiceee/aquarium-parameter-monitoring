@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
+import { signInAnonymously } from "firebase/auth";
+import { onValue, ref, set } from "firebase/database";
+import { Droplets, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
 import { SensorCard } from "./components/SensorCard.tsx";
 import { StatusAlert } from "./components/StatusAlert.tsx";
 import { ThresholdSettings } from "./components/ThresholdSettings.tsx";
-import { Droplets, Settings } from "lucide-react";
-import type { SensorData, Thresholds } from "./types/index.ts";
-import "./index.css";
 import { Button } from "./components/ui/button.tsx";
-import { auth, database } from "./lib/firebase.ts";
-import { ref, onValue, set } from "firebase/database";
+import "./index.css";
 import { getStatus } from "./lib/alertUtils.ts";
-import { signInAnonymously } from "firebase/auth";
+import { auth, database } from "./lib/firebase.ts";
+import type { SensorData, Thresholds } from "./types/index.ts";
+
+import ReloadPrompt from "./components/ReloadPrompt.tsx";
 
 export default function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -162,6 +164,7 @@ export default function App() {
           </div>
         )}
       </div>
+      <ReloadPrompt />
     </div>
   );
 }
