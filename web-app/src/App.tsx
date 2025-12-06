@@ -12,7 +12,10 @@ import { auth, database, getTokenFunction } from "./lib/firebase.ts";
 import type { SensorData, Thresholds } from "./types/index.ts";
 
 import ReloadPrompt from "./components/ReloadPrompt.tsx";
-import { requestNotificationPermission } from "./lib/utils.ts";
+import {
+  requestNotificationPermission,
+  subscribeToAlertsTopic,
+} from "./lib/utils.ts";
 
 export default function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -80,7 +83,12 @@ export default function App() {
       try {
         const token = await getTokenFunction();
         if (token) {
-          console.log("FCM Token:", token);
+          try {
+            const result = await subscribeToAlertsTopic(token);
+            console.log("Topic subscription result:", result);
+          } catch (error) {
+            console.error("Failed to subscribe to topic:", error);
+          }
         } else {
           requestNotificationPermission();
         }
