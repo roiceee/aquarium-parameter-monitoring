@@ -83,12 +83,6 @@ export const sendNotification = onRequest(
           link: "https://aquamonitor.roice.xyz",
         },
       },
-      data: {
-        type,
-        level,
-        currentValue: currentValue.toString(),
-        thresholdValue: thresholdValue.toString(),
-      },
     };
 
     try {
