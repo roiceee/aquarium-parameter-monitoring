@@ -9,6 +9,7 @@ import {
   updateNotificationTimestamp,
   getAlertMessage,
 } from "./utils";
+import {app} from "./index";
 
 /**
  * Database trigger to check sensor thresholds and send notifications
@@ -30,7 +31,7 @@ export const checkSensorThresholds = onValueWritten(
     });
 
     // Fetch thresholds from database
-    const db = getDatabase();
+    const db = getDatabase(app);
     const thresholdsSnapshot = await db.ref("thresholds").get();
     const thresholds = thresholdsSnapshot.val();
 
@@ -107,7 +108,7 @@ export const checkSensorThresholds = onValueWritten(
       };
 
       try {
-        const response = await getMessaging().send(message);
+        const response = await getMessaging(app).send(message);
         await updateNotificationTimestamp(db, type, level);
 
         logger.info("Notification sent from database trigger", {
