@@ -1,9 +1,9 @@
-import { onValueWritten } from "firebase-functions/v2/database";
+import {onValueWritten} from "firebase-functions/v2/database";
 import * as logger from "firebase-functions/logger";
-import { getMessaging, Message } from "firebase-admin/messaging";
-import { getDatabase } from "firebase-admin/database";
-import type { AlertType, AlertLevel } from "./types";
-import { TOPIC } from "./constants";
+import {getMessaging, Message} from "firebase-admin/messaging";
+import {getDatabase} from "firebase-admin/database";
+import type {AlertType, AlertLevel} from "./types";
+import {TOPIC} from "./constants";
 import {
   canSendNotification,
   updateNotificationTimestamp,
@@ -15,7 +15,7 @@ import {
  * Triggered on any write to /sensors path
  */
 export const checkSensorThresholds = onValueWritten(
-  { ref: "/sensors", region: "asia-southeast1" },
+  {ref: "/sensors", region: "asia-southeast1"},
   async (event) => {
     const sensorData = event.data.after.val();
 
@@ -77,7 +77,7 @@ export const checkSensorThresholds = onValueWritten(
       }
 
       // Format alert message
-      const { title, body } = getAlertMessage(
+      const {title, body} = getAlertMessage(
         type,
         level,
         currentValue,
@@ -149,6 +149,6 @@ export const checkSensorThresholds = onValueWritten(
     // Wait for all checks to complete
     await Promise.all(checks);
 
-    logger.info("Threshold check completed", { structuredData: true });
+    logger.info("Threshold check completed", {structuredData: true});
   }
 );
