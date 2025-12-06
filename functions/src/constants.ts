@@ -1,3 +1,4 @@
 export const TOPIC = "alerts";
-// 30 minutes in milliseconds
-export const NOTIFICATION_COOLDOWN_MS = 30 * 60 * 1000;
+// Notification cooldown period
+export const NOTIFICATION_COOLDOWN_MS = 10 * 1000; // 10 seconds (testing)
+// export const NOTIFICATION_COOLDOWN_MS = 10 * 60 * 1000; // 10 minutes (production)
