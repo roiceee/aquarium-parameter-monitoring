@@ -1,15 +1,15 @@
-import {onRequest} from "firebase-functions/https";
+import { onRequest } from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
-import {getMessaging, type Message} from "firebase-admin/messaging";
-import {getDatabase} from "firebase-admin/database";
-import {type AlertPayload} from "./types";
-import {TOPIC, NOTIFICATION_COOLDOWN_MS} from "./constants";
+import { getMessaging, type Message } from "firebase-admin/messaging";
+import { getDatabase } from "firebase-admin/database";
+import { type AlertPayload } from "./types";
+import { TOPIC, NOTIFICATION_COOLDOWN_MS } from "./constants";
 import {
   canSendNotification,
   updateNotificationTimestamp,
   getAlertMessage,
 } from "./utils";
-import {app} from "./index";
+import { app } from "./index";
 
 /**
  * HTTP endpoint to send notifications manually (for testing)
@@ -28,9 +28,9 @@ export const sendNotification = onRequest(
       return;
     }
 
-    logger.info("sendNotification called", {structuredData: true});
+    logger.info("sendNotification called", { structuredData: true });
 
-    const {type, level, currentValue, thresholdValue}: AlertPayload =
+    const { type, level, currentValue, thresholdValue }: AlertPayload =
       req.body;
 
     if (
@@ -39,7 +39,7 @@ export const sendNotification = onRequest(
       currentValue === undefined ||
       thresholdValue === undefined
     ) {
-      logger.error("Invalid alert payload", {structuredData: true});
+      logger.error("Invalid alert payload", { structuredData: true });
       res.status(400).send("Invalid alert payload");
       return;
     }
@@ -64,7 +64,7 @@ export const sendNotification = onRequest(
     }
 
     // Format alert message with recommendations
-    const {title: alertTitle, body: alertBody} = getAlertMessage(
+    const { title: alertTitle, body: alertBody } = getAlertMessage(
       type,
       level,
       currentValue,

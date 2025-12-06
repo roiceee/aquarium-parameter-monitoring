@@ -26,46 +26,7 @@ firebase.initializeApp({
 
 // Retrieve an instance of Firebase Messaging so that it can handle background
 // messages.
-// const messaging = firebase.messaging();
+const messaging = firebase.messaging();
 
-// messaging.onBackgroundMessage((payload) => {
-//   const notificationTitle = payload.notification?.title || "Aquarium Alert";
-//   //   const notificationOptions = {
-//   //     body: payload.notification?.body || "New notification received",
-//   //     icon: payload.notification?.icon || "/pwa-192x192.png",
-//   // data: {
-//   //   url: payload.fcmOptions?.link || "https://aquamonitor.roice.xyz",
-//   //   ...payload.data,
-//   // },
-//   //   };
-
-//   self.registration.showNotification(notificationTitle);
-// });
-
-// // Handle notification click
-// self.addEventListener("notificationclick", (event) => {
-//   console.log("[firebase-messaging-sw.js] Notification clicked:", event);
-
-//   event.notification.close();
-
-//   // Open the app URL
-//   const urlToOpen =
-//     event.notification.data?.url || "https://aquamonitor.roice.xyz";
-
-//   event.waitUntil(
-//     clients
-//       .matchAll({ type: "window", includeUncontrolled: true })
-//       .then((clientList) => {
-//         // Check if a window is already open
-//         for (const client of clientList) {
-//           if (client.url === urlToOpen && "focus" in client) {
-//             return client.focus();
-//           }
-//         }
-//         // If no window is open, open a new one
-//         if (clients.openWindow) {
-//           return clients.openWindow(urlToOpen);
-//         }
-//       })
-//   );
-// });
+//if you want to customize notifications that are received in the background (Web app is closed or not in browser focus) then you can implement this optional method.
+messaging.onBackgroundMessage((payload) => {});
