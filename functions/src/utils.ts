@@ -1,7 +1,7 @@
 import * as logger from "firebase-functions/logger";
-import type {Database} from "firebase-admin/database";
-import {type AlertType, type AlertLevel} from "./types";
-import {NOTIFICATION_COOLDOWN_MS} from "./constants";
+import type { Database } from "firebase-admin/database";
+import { type AlertType, type AlertLevel } from "./types";
+import { NOTIFICATION_COOLDOWN_MS } from "./constants";
 
 /**
  * Check if notification can be sent based on cooldown period
@@ -88,10 +88,10 @@ export function getAlertMessage(
   // Add specific recommendations for TDS
   if (type === "tds") {
     body +=
-      level === "low" ?
-        ". Consider water changes to increase mineral content." :
-        ". Consider water changes to reduce mineral buildup.";
+      level === "low"
+        ? ". Consider water changes to increase mineral content."
+        : ". Consider water changes to reduce mineral buildup.";
   }
 
-  return {title, body};
+  return { title, body };
 }
