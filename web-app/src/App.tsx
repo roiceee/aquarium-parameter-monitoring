@@ -8,10 +8,11 @@ import { ThresholdSettings } from "./components/ThresholdSettings.tsx";
 import { Button } from "./components/ui/button.tsx";
 import "./index.css";
 import { getStatus } from "./lib/alertUtils.ts";
-import { auth, database } from "./lib/firebase.ts";
+import { auth, database, getTokenFunction } from "./lib/firebase.ts";
 import type { SensorData, Thresholds } from "./types/index.ts";
 
 import ReloadPrompt from "./components/ReloadPrompt.tsx";
+import { requestNotificationPermission } from "./lib/utils.ts";
 
 export default function App() {
   const [showSettings, setShowSettings] = useState(false);
@@ -71,6 +72,23 @@ export default function App() {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  // request notification permission on mount
+  useEffect(() => {
+    async function fetchToken() {
+      try {
+        const token = await getTokenFunction();
+        if (token) {
+          console.log("FCM Token:", token);
+        } else {
+          requestNotificationPermission();
+        }
+      } catch (error) {
+        console.error("Error fetching FCM token:", error);
+      }
+    }
+    fetchToken();
   }, []);
 
   const status = getStatus(sensorData, thresholds);
