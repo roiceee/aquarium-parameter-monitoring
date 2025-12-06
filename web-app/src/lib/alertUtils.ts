@@ -1,6 +1,30 @@
 import type { SensorData, Thresholds, AlertStatus } from "../types/index.ts";
 
 /**
+ * Format alert message with recommendations (matches server-side logic)
+ */
+function getAlertMessage(
+  type: "ph" | "temperature" | "tds",
+  level: "low" | "high",
+  currentValue: number,
+  thresholdValue: number
+): string {
+  let message = `${type.toUpperCase()} is ${
+    level === "low" ? "below" : "above"
+  } threshold. Current: ${currentValue}, Threshold: ${thresholdValue}`;
+
+  // Add specific recommendations for TDS
+  if (type === "tds") {
+    message +=
+      level === "low"
+        ? ". Consider water changes to increase mineral content."
+        : ". Consider water changes to reduce mineral buildup.";
+  }
+
+  return message;
+}
+
+/**
  * Evaluates sensor readings against thresholds and generates alert statuses.
  * Returns array of alerts for parameters that are out of range, or success if all normal.
  */
@@ -12,23 +36,61 @@ export function getStatus(
 
   // Check pH levels
   if (sensorData.ph < thresholds.ph.min) {
-    alerts.push({ type: "warning", message: "pH Too Low" });
+    alerts.push({
+      type: "warning",
+      message: getAlertMessage("ph", "low", sensorData.ph, thresholds.ph.min),
+    });
   } else if (sensorData.ph > thresholds.ph.max) {
-    alerts.push({ type: "warning", message: "pH Too High" });
+    alerts.push({
+      type: "warning",
+      message: getAlertMessage("ph", "high", sensorData.ph, thresholds.ph.max),
+    });
   }
 
   // Check temperature levels
   if (sensorData.temperature < thresholds.temperature.min) {
-    alerts.push({ type: "warning", message: "Temperature Too Low" });
+    alerts.push({
+      type: "warning",
+      message: getAlertMessage(
+        "temperature",
+        "low",
+        sensorData.temperature,
+        thresholds.temperature.min
+      ),
+    });
   } else if (sensorData.temperature > thresholds.temperature.max) {
-    alerts.push({ type: "warning", message: "Temperature Too High" });
+    alerts.push({
+      type: "warning",
+      message: getAlertMessage(
+        "temperature",
+        "high",
+        sensorData.temperature,
+        thresholds.temperature.max
+      ),
+    });
   }
 
   // Check TDS levels
   if (sensorData.tds < thresholds.tds.min) {
-    alerts.push({ type: "info", message: "TDS Below Threshold" });
+    alerts.push({
+      type: "info",
+      message: getAlertMessage(
+        "tds",
+        "low",
+        sensorData.tds,
+        thresholds.tds.min
+      ),
+    });
   } else if (sensorData.tds > thresholds.tds.max) {
-    alerts.push({ type: "warning", message: "Needs Water Change" });
+    alerts.push({
+      type: "warning",
+      message: getAlertMessage(
+        "tds",
+        "high",
+        sensorData.tds,
+        thresholds.tds.max
+      ),
+    });
   }
 
   // Default success message if no alerts
