@@ -26,21 +26,21 @@ firebase.initializeApp({
 
 // Retrieve an instance of Firebase Messaging so that it can handle background
 // messages.
-const messaging = firebase.messaging();
+// const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  const notificationTitle = payload.notification?.title || "Aquarium Alert";
-  //   const notificationOptions = {
-  //     body: payload.notification?.body || "New notification received",
-  //     icon: payload.notification?.icon || "/pwa-192x192.png",
-  // data: {
-  //   url: payload.fcmOptions?.link || "https://aquamonitor.roice.xyz",
-  //   ...payload.data,
-  // },
-  //   };
+// messaging.onBackgroundMessage((payload) => {
+//   const notificationTitle = payload.notification?.title || "Aquarium Alert";
+//   //   const notificationOptions = {
+//   //     body: payload.notification?.body || "New notification received",
+//   //     icon: payload.notification?.icon || "/pwa-192x192.png",
+//   // data: {
+//   //   url: payload.fcmOptions?.link || "https://aquamonitor.roice.xyz",
+//   //   ...payload.data,
+//   // },
+//   //   };
 
-  self.registration.showNotification(notificationTitle);
-});
+//   self.registration.showNotification(notificationTitle);
+// });
 
 // // Handle notification click
 // self.addEventListener("notificationclick", (event) => {
