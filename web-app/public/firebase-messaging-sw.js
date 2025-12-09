@@ -29,10 +29,10 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 //if you want to customize notifications that are received in the background (Web app is closed or not in browser focus) then you can implement this optional method.
-messaging.onBackgroundMessage((payload) => {
-  console.log(
-    "[firebase-messaging-sw.js] Received background message ",
-    payload
-  );
-  self.registration.showNotification(payload);
-});
+// messaging.onBackgroundMessage((payload) => {
+//   console.log(
+//     "[firebase-messaging-sw.js] Received background message ",
+//     payload
+//   );
+//   self.registration.showNotification(payload);
+// });
