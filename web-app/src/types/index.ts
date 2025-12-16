@@ -14,3 +14,11 @@ export interface AlertStatus {
   type: "success" | "warning" | "info";
   message: string;
 }
+
+export interface SensorLog {
+  id: string;
+  ph: number;
+  temperature: number;
+  tds: number;
+  timestamp: Date;
+}

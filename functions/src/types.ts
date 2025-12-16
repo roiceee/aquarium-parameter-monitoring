@@ -19,3 +19,10 @@ export interface Thresholds {
   temperature?: { min: number; max: number };
   tds?: { min: number; max: number };
 }
+
+export interface SensorLog {
+  ph: number;
+  temperature: number;
+  tds: number;
+  timestamp: FirebaseFirestore.Timestamp;
+}

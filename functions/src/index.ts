@@ -11,3 +11,4 @@ setGlobalOptions({maxInstances: 3});
 export {sendNotification} from "./sendNotification";
 export {subscribeToTopic} from "./subscribeToTopic";
 export {checkSensorThresholds} from "./checkSensorThresholds";
+export {scheduledDataLogger} from "./scheduledDataLogger";

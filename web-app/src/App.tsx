@@ -1,10 +1,11 @@
 import { signInAnonymously } from "firebase/auth";
 import { onValue, ref, set } from "firebase/database";
-import { Droplets, Settings } from "lucide-react";
+import { Droplets, Settings, BarChart3 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SensorCard } from "./components/SensorCard.tsx";
 import { StatusAlert } from "./components/StatusAlert.tsx";
 import { ThresholdSettings } from "./components/ThresholdSettings.tsx";
+import { Analytics } from "./components/Analytics.tsx";
 import { Button } from "./components/ui/button.tsx";
 import "./index.css";
 import { getStatus } from "./lib/alertUtils.ts";
@@ -17,8 +18,10 @@ import {
   subscribeToAlertsTopic,
 } from "./lib/utils.ts";
 
+type ViewMode = "dashboard" | "settings" | "analytics";
+
 export default function App() {
-  const [showSettings, setShowSettings] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("dashboard");
   const [sensorData, setSensorData] = useState<SensorData>({
     ph: 0,
     temperature: 0,
@@ -122,20 +125,38 @@ export default function App() {
                 Aquarium Monitor
               </h2>
             </div>
-            <Button
-              size={"icon-lg"}
-              variant={"secondary"}
-              onClick={() => setShowSettings(!showSettings)}
-              aria-label="Settings"
-            >
-              <Settings className="w-5 h-5 " />
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                size={"icon-lg"}
+                variant={viewMode === "analytics" ? "default" : "secondary"}
+                onClick={() =>
+                  setViewMode(
+                    viewMode === "analytics" ? "dashboard" : "analytics"
+                  )
+                }
+                aria-label="Analytics"
+              >
+                <BarChart3 className="w-5 h-5 " />
+              </Button>
+              <Button
+                size={"icon-lg"}
+                variant={viewMode === "settings" ? "default" : "secondary"}
+                onClick={() =>
+                  setViewMode(
+                    viewMode === "settings" ? "dashboard" : "settings"
+                  )
+                }
+                aria-label="Settings"
+              >
+                <Settings className="w-5 h-5 " />
+              </Button>
+            </div>
           </div>
           <p className="text-sm text-slate-500">Real-time sensor monitoring</p>
         </div>
 
         {/* Sensor Cards */}
-        {!showSettings ? (
+        {viewMode === "dashboard" ? (
           <>
             <div className="px-6 pt-6 pb-4 space-y-4">
               <SensorCard
@@ -182,13 +203,17 @@ export default function App() {
               ))}
             </div>
           </>
-        ) : (
+        ) : viewMode === "settings" ? (
           <div className="px-6 pb-8">
             <ThresholdSettings
               thresholds={thresholds}
               onUpdate={handleUpdateThresholds}
-              onClose={() => setShowSettings(false)}
+              onClose={() => setViewMode("dashboard")}
             />
+          </div>
+        ) : (
+          <div className="px-6 py-6">
+            <Analytics />
           </div>
         )}
       </div>
