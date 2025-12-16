@@ -313,7 +313,7 @@ export function Analytics() {
                     <tr className="border-b">
                       <th className="text-left p-2">Timestamp</th>
                       <th className="text-right p-2">pH</th>
-                      <th className="text-right p-2">Temperature</th>
+                      <th className="text-right p-2">Temp</th>
                       <th className="text-right p-2">TDS</th>
                     </tr>
                   </thead>
