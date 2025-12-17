@@ -89,6 +89,7 @@ export default function App() {
           try {
             const result = await subscribeToAlertsTopic(token);
             console.log("Topic subscription result:", result);
+            console.log("Topic subscription token:", token);
           } catch (error) {
             console.error("Failed to subscribe to topic:", error);
           }
