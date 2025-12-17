@@ -1,7 +1,6 @@
 import {onSchedule} from "firebase-functions/v2/scheduler";
 import {getDatabase} from "firebase-admin/database";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
-import {app} from "./index";
 import type {SensorData} from "./types";
 
 /**
@@ -20,8 +19,8 @@ export const scheduledDataLogger = onSchedule(
     timeZone: "Asia/Singapore",
   },
   async () => {
-    const db = getDatabase(app);
-    const firestore = getFirestore(app);
+    const db = getDatabase();
+    const firestore = getFirestore();
 
     try {
       // Read current sensor data from RTDB

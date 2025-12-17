@@ -1,15 +1,14 @@
 import {onValueWritten} from "firebase-functions/v2/database";
 import * as logger from "firebase-functions/logger";
-import {getMessaging, Message} from "firebase-admin/messaging";
+import {getMessaging, TokenMessage} from "firebase-admin/messaging";
 import {getDatabase} from "firebase-admin/database";
+import {getFirestore} from "firebase-admin/firestore";
 import type {AlertType, AlertLevel} from "./types";
-import {TOPIC} from "./constants";
 import {
   canSendNotification,
   updateNotificationTimestamp,
   getAlertMessage,
 } from "./utils";
-import {app} from "./index";
 
 /**
  * Database trigger to check sensor thresholds and send notifications
@@ -31,7 +30,7 @@ export const checkSensorThresholds = onValueWritten(
     });
 
     // Fetch thresholds from database
-    const db = getDatabase(app);
+    const db = getDatabase();
     const thresholdsSnapshot = await db.ref("thresholds").get();
     const thresholds = thresholdsSnapshot.val();
 
@@ -85,40 +84,109 @@ export const checkSensorThresholds = onValueWritten(
         thresholdValue
       );
 
-      const message: Message = {
-        topic: TOPIC,
-        webpush: {
-          notification: {
-            title,
-            body,
-            icon: "https://aquamonitor.roice.xyz/pwa-64x64.png",
-            requireInteraction: true,
-            tag: `${type}-${level}`,
-          },
-          fcmOptions: {
-            link: "https://aquamonitor.roice.xyz",
-          },
+      // Retrieve all active FCM tokens from Firestore
+      const firestore = getFirestore();
+      const tokensSnapshot = await firestore
+        .collection("fcmTokens")
+        .where("active", "==", true)
+        .get();
+
+      if (tokensSnapshot.empty) {
+        logger.warn("No active FCM tokens found in Firestore");
+        return;
+      }
+
+      logger.info(`Found ${tokensSnapshot.size} active FCM tokens`);
+
+      // Prepare notification payload
+      const notificationPayload = {
+        title,
+        body,
+        icon: "https://aquamonitor.roice.xyz/pwa-64x64.png",
+      };
+
+      const webpushConfig = {
+        notification: {
+          ...notificationPayload,
+          requireInteraction: true,
+          tag: `${type}-${level}`,
+        },
+        fcmOptions: {
+          link: "https://aquamonitor.roice.xyz",
+        },
+        data: {
+          type,
+          level,
+          currentValue: currentValue.toString(),
+          thresholdValue: thresholdValue.toString(),
         },
       };
 
-      try {
-        const response = await getMessaging(app).send(message);
-        await updateNotificationTimestamp(db, type, level);
+      // Send notification to each token
+      const sendPromises = tokensSnapshot.docs.map(async (doc) => {
+        const tokenData = doc.data();
+        const token = tokenData.token;
 
-        logger.info("Notification sent from database trigger", {
-          messageId: response,
-          type,
-          level,
-          structuredData: true,
-        });
-      } catch (error) {
-        logger.error("Error sending notification from database trigger", {
-          error: error instanceof Error ? error.message : String(error),
-          type,
-          level,
-          structuredData: true,
-        });
-      }
+        const message: TokenMessage = {
+          token,
+          webpush: webpushConfig,
+        };
+
+        try {
+          const response = await getMessaging().send(message);
+          logger.info("Notification sent successfully", {
+            messageId: response,
+            token: token.substring(0, 20) + "...",
+            type,
+            level,
+            structuredData: true,
+          });
+          return {success: true, token};
+        } catch (error) {
+          logger.error("Error sending notification to token", {
+            error: error instanceof Error ? error.message : String(error),
+            token: token.substring(0, 20) + "...",
+            type,
+            level,
+            structuredData: true,
+          });
+
+          // If token is invalid, mark it as inactive
+          if (
+            error instanceof Error &&
+            (error.message.includes("registration-token-not-registered") ||
+              error.message.includes("invalid-registration-token"))
+          ) {
+            await firestore.collection("fcmTokens").doc(doc.id).update({
+              active: false,
+              lastError: error.message,
+              lastErrorAt: new Date(),
+            });
+            logger.info("Marked token as inactive", {
+              token: token.substring(0, 20) + "...",
+            });
+          }
+
+          return {success: false, token, error};
+        }
+      });
+
+      const results = await Promise.allSettled(sendPromises);
+      const successCount = results.filter(
+        (r) => r.status === "fulfilled" && r.value.success
+      ).length;
+
+      logger.info("Notification batch complete", {
+        total: tokensSnapshot.size,
+        successful: successCount,
+        failed: tokensSnapshot.size - successCount,
+        type,
+        level,
+        structuredData: true,
+      });
+
+      // Update timestamp after sending
+      await updateNotificationTimestamp(db, type, level);
     }
 
     // Check all three sensor types

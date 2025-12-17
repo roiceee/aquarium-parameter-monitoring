@@ -2,20 +2,20 @@
 
 ## Project Overview
 
-**Monorepo structure** with two distinct codebases:
+**Monorepo structure** with two independent codebases:
 
-- `web-app/`: React PWA for real-time aquarium water quality monitoring
-- `functions/`: Firebase Cloud Functions for push notifications and backend logic
+- `web-app/`: React PWA for real-time aquarium water quality monitoring with analytics
+- `functions/`: Firebase Cloud Functions for automated notifications, scheduled logging, and backend logic
 
-Real-time sensor monitoring (pH, temperature, TDS) with configurable thresholds, visual alerts, and push notifications. Data persists in Firebase Realtime Database with two-way sync.
+Real-time sensor monitoring (pH, temperature, TDS) with configurable thresholds, visual alerts, push notifications, and historical data analytics. Data flows: RTDB for real-time values → Firestore for historical logs → Recharts for visualization.
 
 ## Tech Stack
 
-- **Frontend**: React 19 (TypeScript), Vite, PWA (vite-plugin-pwa)
+- **Frontend**: React 19 (TypeScript), Vite, PWA (vite-plugin-pwa), Recharts
 - **Styling**: Tailwind CSS v4 (via `@tailwindcss/vite`), shadcn/ui (New York style)
 - **Icons**: lucide-react
-- **Backend**: Firebase Realtime Database, Firebase Auth (anonymous), Firebase Cloud Messaging (FCM)
-- **Functions**: Firebase Cloud Functions v2 (Node 24, TypeScript)
+- **Backend**: Firebase Realtime Database (real-time data), Firestore (historical logs), Firebase Auth (anonymous), Firebase Cloud Messaging (FCM)
+- **Functions**: Firebase Cloud Functions v2 (Node 24, TypeScript) - 4 functions deployed
 - **Package Manager**: pnpm (web-app), npm (functions)
 
 ## Monorepo Structure
@@ -37,26 +37,59 @@ Real-time sensor monitoring (pH, temperature, TDS) with configurable thresholds,
 
 ## Architecture & Data Flow
 
+### Dual-Database Architecture (CRITICAL)
+
+**Two Firebase databases serve different purposes**:
+
+1. **Realtime Database (RTDB)**: Live sensor values, thresholds, notification timestamps
+
+   - Web app subscribes via `onValue()` listeners
+   - Updated by external sensor hardware (not in this repo)
+   - Functions read thresholds here for validation logic
+
+2. **Firestore**: Historical sensor logs for analytics
+   - Written by `scheduledDataLogger` Cloud Function every minute
+   - Read by `Analytics.tsx` component via `fetchSensorLogs()`
+   - Enables time-series visualization with Recharts
+
+**Data Flow Diagram**:
+
+```
+Sensor Hardware → RTDB /sensors → Web App (real-time display)
+                     ↓
+            checkSensorThresholds (Function)
+                     ↓
+            FCM Topic "alerts" → Push Notifications
+                     ↓
+RTDB /sensors → scheduledDataLogger (every minute) → Firestore /sensorLogs
+                                                            ↓
+                                            Analytics Component (Recharts)
+```
+
 ### Web App Component Hierarchy
 
 ```
-App.tsx (state + Firebase listeners)
-├── SensorCard (display + progress bars)
-├── StatusAlert (alert UI)
-├── ThresholdSettings (modal-style settings)
+App.tsx (state + 3 view modes + Firebase listeners)
+├── Dashboard View
+│   ├── SensorCard (×3: pH, temp, TDS with progress bars)
+│   └── StatusAlert (computed via getStatus() utility)
+├── Settings View
+│   └── ThresholdSettings (inline editing, saves to RTDB)
+├── Analytics View
+│   └── Analytics (Recharts line charts + data management)
 └── ReloadPrompt (PWA update notifications)
 ```
 
 ### State Management Pattern
 
-- **Local state only** (useState) - no context or external state management
-- `App.tsx` holds all application state: `sensorData`, `thresholds`, `showSettings`
-- Three Firebase real-time listeners in `App.tsx` useEffect hooks:
+- **Local state only** (useState) - no context/Redux
+- `App.tsx` holds: `sensorData`, `thresholds`, `viewMode` ("dashboard" | "settings" | "analytics")
+- **Three Firebase listeners in separate useEffect hooks**:
   1. `sensors/` path → updates `sensorData` state
   2. `thresholds/` path → updates `thresholds` state
-  3. Anonymous auth on mount via `signInAnonymously(auth)`
-- Status alerts computed on-demand via `getStatus()` utility (imported from `src/lib/alertUtils.ts`)
-- FCM token fetched on mount, stored locally (not persisted to database yet)
+  3. Anonymous auth on mount → required for RTDB/Firestore access
+- **View mode toggle pattern**: Single state variable controls which component tree renders
+- Status alerts computed on-demand via `getStatus()` utility (never cached)
 
 ### Firebase Integration Architecture
 
@@ -65,34 +98,62 @@ App.tsx (state + Firebase listeners)
 ```json
 {
   "sensors": {
-    "ph": 7.2, // NOT "phLevel" - direct field names
-    "temperature": 25.5, // NOT "temp"
-    "tds": 320 // NOT "tdsLevel"
+    "ph": 7.2,
+    "temperature": 25.5,
+    "tds": 320
   },
   "thresholds": {
     "ph": { "min": 6.5, "max": 8.0 },
     "temperature": { "min": 22, "max": 28 },
     "tds": { "min": 150, "max": 400 }
+  },
+  "notificationTimestamps": {
+    "ph-high": 1734394800000,
+    "temperature-low": 1734391200000
   }
 }
 ```
 
-**CRITICAL CHANGE**: Database field names were simplified to match state directly (`ph`, `temperature`, `tds`), not the legacy names from original instructions (`phLevel`, `temp`, `tdsLevel`). Check `App.tsx` useEffect for current mapping.
+**Firestore Structure**:
 
-**Firebase Services**:
+```
+/sensorLogs (collection)
+  /{auto-id} (document)
+    - ph: number
+    - temperature: number
+    - tds: number
+    - timestamp: Timestamp (server-generated)
 
-- `src/lib/firebase.ts` exports: `database`, `auth`, `messaging`, `getTokenFunction()`
-- Environment variables: All prefixed with `VITE_` (required by Vite)
-- Auth: Anonymous sign-in on app mount (required for RTDB read/write)
-- FCM: Token fetched via `getTokenFunction()`, permission requested via `requestNotificationPermission()`
+/fcmTokens (collection)
+  /{tokenId} (document - token used as ID)
+    - token: string (FCM registration token)
+    - createdAt: Timestamp
+    - lastUpdated: Timestamp
+    - active: boolean
+    - lastError?: string (if token failed)
+    - lastErrorAt?: Timestamp
+```
 
-**Firebase Functions**:
+**Firebase Services** (`web-app/src/lib/firebase.ts`):
 
-- `functions/src/index.ts` defines HTTP-triggered `sendNotification` function
-- Accepts POST with `AlertPayload` (type, level, currentValue, thresholdValue)
-- Global limit: `maxInstances: 3` (cost control via `setGlobalOptions`)
-- Deploy: `npm run deploy` from `functions/` directory (requires `npm run build` first)
-- Local testing: `npm run serve` (Firebase emulators)
+- Exports: `database` (RTDB), `firestore`, `auth`, `messaging`, `getTokenFunction()`
+- Environment variables: All prefixed with `VITE_` (Vite requirement)
+- Auth: Anonymous sign-in on app mount (required for RTDB/Firestore read/write)
+- FCM: Token stored in Firestore via `storeFCMToken()` function
+- **Foreground message handler**: `onMessage()` displays notifications when app is open
+
+**3 Cloud Functions** (`functions/src/index.ts`):
+
+1. **`sendNotification`** (HTTP): Manual trigger for testing (legacy, rarely used)
+2. **`checkSensorThresholds`** (RTDB trigger): Watches `/sensors`, sends FCM on violations
+   - Retrieves active tokens from Firestore `/fcmTokens` collection
+   - Sends individual `TokenMessage` to each device (not topic-based)
+   - Automatically marks invalid tokens as inactive
+   - Uses notification cooldown: 10 seconds (configurable in `constants.ts`)
+   - Stores timestamps in `/notificationTimestamps/{sensor}-{level}`
+3. **`scheduledDataLogger`** (cron: every minute): Copies RTDB sensors → Firestore logs
+   - Region: asia-southeast1, Timezone: Asia/Singapore
+   - Enables historical analytics without RTDB query limits
 
 ### PWA Configuration
 
@@ -115,9 +176,12 @@ const { needRefresh, updateServiceWorker } = useRegisterSW({...})
 
 All sensor-related types centralized here:
 
-- `SensorData`: current readings (ph, temperature, tds)
-- `Thresholds`: min/max bounds for each parameter
-- `AlertStatus`: alert type and message for status display
+- `SensorData`: current readings (ph, temperature, tds) - all required fields
+- `Thresholds`: min/max bounds for each parameter - all required fields
+- `AlertStatus`: alert type ("success" | "warning" | "info") and message for status display
+- `SensorLog`: historical data with `id`, sensor values, and `timestamp: Date`
+
+**Functions types** (`functions/src/types.ts`): Similar but with optional fields to handle partial RTDB data
 
 ### Component Patterns
 
@@ -231,7 +295,7 @@ VITE_VAPID_KEY=...  # For FCM web push
 ## Critical Patterns to Preserve
 
 1. **Database field naming**: App.tsx currently reads `data.ph`, `data.temperature`, `data.tds` directly from RTDB - verify current schema before assuming legacy field names
-2. **Settings toggle pattern**: `showSettings` boolean controls conditional render between sensors/settings view
+2. **Settings toggle pattern**: `viewMode` state controls conditional render between dashboard/settings/analytics views
 3. **Type imports**: Use `import type { ... }` for type-only imports
 4. **Decimal precision**: Pass `decimals` prop to format display (pH=2, temp=1, TDS=0)
 5. **Alert computation**: Always derive alerts from current state via `getStatus()` utility, don't cache them
@@ -239,6 +303,7 @@ VITE_VAPID_KEY=...  # For FCM web push
 7. **PWA reload pattern**: `ReloadPrompt` component with explicit user action (not auto-reload)
 8. **Anonymous auth**: Must call `signInAnonymously(auth)` before RTDB operations
 9. **Monorepo navigation**: Always `cd` to correct directory (`web-app/` or `functions/`) before commands
+10. **Firestore queries**: Analytics fetches logs with `orderBy("timestamp", "desc")` then reverses for chronological charts
 
 ## Known Gotchas
 

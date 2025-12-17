@@ -1,0 +1,24 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // FCM Tokens collection - allow authenticated users to write their own tokens
+    match /fcmTokens/{tokenId} {
+      // Allow anyone with anonymous auth to create/update tokens
+      allow write: if request.auth != null;
+      
+      // Only Cloud Functions can read tokens (server-side)
+      allow read: if false;
+    }
+    
+    // Sensor Logs collection - written by Cloud Functions, readable by authenticated users
+    match /sensorLogs/{logId} {
+      // Allow authenticated users to read logs for analytics
+      allow read: if request.auth != null;
+      
+      // Only Cloud Functions can write logs
+      allow write: if false;
+    }
+  }
+}

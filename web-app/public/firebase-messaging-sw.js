@@ -28,11 +28,25 @@ firebase.initializeApp({
 // messages.
 const messaging = firebase.messaging();
 
-//if you want to customize notifications that are received in the background (Web app is closed or not in browser focus) then you can implement this optional method.
-messaging.onBackgroundMessage((payload) => {
-  console.log(
-    "[firebase-messaging-sw.js] Received background message ",
-    payload
-  );
-  self.registration.showNotification(payload);
-});
+// Handle background messages (when app is closed or not in focus)
+// messaging.onBackgroundMessage((payload) => {
+//   console.log(
+//     "[firebase-messaging-sw.js] Received background message",
+//     payload
+//   );
+
+//   const notificationTitle = payload.notification?.title || "Aquarium Alert";
+//   const notificationOptions = {
+//     body: payload.notification?.body || "Check your aquarium sensors",
+//     icon: payload.notification?.icon || "/pwa-192x192.png",
+//     badge: "/pwa-64x64.png",
+//     tag: payload.notification?.tag || "aquarium-notification",
+//     requireInteraction: true,
+//     data: payload.data,
+//   };
+
+//   return self.registration.showNotification(
+//     notificationTitle,
+//     notificationOptions
+//   );
+// });

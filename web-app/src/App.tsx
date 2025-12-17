@@ -13,10 +13,8 @@ import { auth, database, getTokenFunction } from "./lib/firebase.ts";
 import type { SensorData, Thresholds } from "./types/index.ts";
 
 import ReloadPrompt from "./components/ReloadPrompt.tsx";
-import {
-  requestNotificationPermission,
-  subscribeToAlertsTopic,
-} from "./lib/utils.ts";
+import { requestNotificationPermission, storeFCMToken } from "./lib/utils.ts";
+import "./lib/notificationDebug.ts"; // Enable debug tools in console
 
 type ViewMode = "dashboard" | "settings" | "analytics";
 
@@ -84,20 +82,39 @@ export default function App() {
   useEffect(() => {
     async function fetchToken() {
       try {
+        // First check if notifications are supported
+        if (!("Notification" in window)) {
+          console.error("This browser does not support notifications");
+          return;
+        }
+
+        // Request permission if not already granted
+        let permission = Notification.permission;
+        if (permission === "default") {
+          permission = await requestNotificationPermission();
+        }
+
+        if (permission !== "granted") {
+          console.log("Notification permission not granted");
+          return;
+        }
+
+        // Get FCM token
         const token = await getTokenFunction();
         if (token) {
+          console.log("FCM Token obtained:", token.substring(0, 20) + "...");
+
           try {
-            const result = await subscribeToAlertsTopic(token);
-            console.log("Topic subscription result:", result);
-            console.log("Topic subscription token:", token);
+            await storeFCMToken(token);
+            console.log("FCM token stored in Firestore successfully");
           } catch (error) {
-            console.error("Failed to subscribe to topic:", error);
+            console.error("Failed to store FCM token:", error);
           }
         } else {
-          requestNotificationPermission();
+          console.error("Failed to obtain FCM token");
         }
       } catch (error) {
-        console.error("Error fetching FCM token:", error);
+        console.error("Error in notification setup:", error);
       }
     }
     fetchToken();

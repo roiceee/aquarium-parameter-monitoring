@@ -1,57 +1,55 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { firestore } from "./firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function requestNotificationPermission() {
-  Notification.requestPermission().then((permission) => {
-    if (permission === "granted") {
-      console.log("Notification permission granted.");
-    }
-  });
-}
+/**
+ * Request notification permission from the user
+ * @returns Promise<NotificationPermission>
+ */
+export async function requestNotificationPermission(): Promise<NotificationPermission> {
+  if (!("Notification" in window)) {
+    console.error("This browser does not support notifications");
+    return "denied";
+  }
 
-interface NotificationResponse {
-  success: boolean;
-  message: string;
-  messageId?: string;
-  cooldownMinutes?: number;
-  emulator?: boolean;
+  const permission = await Notification.requestPermission();
+  if (permission === "granted") {
+    console.log("Notification permission granted.");
+  } else {
+    console.log("Notification permission denied.");
+  }
+  return permission;
 }
 
 /**
- * Subscribe FCM token to the alerts topic
+ * Store FCM token in Firestore
  * @param token - FCM registration token
- * @returns Promise with subscription result
+ * @returns Promise<void>
  */
-export async function subscribeToAlertsTopic(
-  token: string
-): Promise<NotificationResponse> {
-  const url = import.meta.env.VITE_SUBSCRIBE_TOPIC_URL;
-
-  if (!url) {
-    throw new Error("VITE_SUBSCRIBE_TOPIC_URL is not configured");
-  }
-
+export async function storeFCMToken(token: string): Promise<void> {
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    // Use token as document ID to prevent duplicates
+    const tokenRef = doc(firestore, "fcmTokens", token);
+
+    await setDoc(
+      tokenRef,
+      {
+        token,
+        createdAt: serverTimestamp(),
+        lastUpdated: serverTimestamp(),
+        active: true,
       },
-      body: JSON.stringify({ token }),
-    });
+      { merge: true }
+    );
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data;
+    console.log("FCM token stored successfully in Firestore");
   } catch (error) {
-    console.error("Error subscribing to topic:", error);
+    console.error("Failed to store FCM token:", error);
     throw error;
   }
 }

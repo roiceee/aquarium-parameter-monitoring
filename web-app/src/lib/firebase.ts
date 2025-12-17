@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 import { getFirestore } from "firebase/firestore";
-import { getMessaging, getToken } from "firebase/messaging";
+import { getMessaging, getToken, onMessage } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -22,25 +22,26 @@ export const messaging = getMessaging(app);
 export const firestore = getFirestore(app);
 export const getTokenFunction = () =>
   getToken(messaging, {
-    vapidKey: import.meta.env.VITE_VAPID_KEY,
+    vapidKey:
+      "BJej_joq-UOKjwyTfM0vS9NCRu8JDe-h_nibElmWKEtEdNEwrbBUEO0PuD73SP-YXFMObcwjYbxulscXbNqbH6M",
   });
 
-// Listen for foreground messages
-// onMessage(messaging, (payload) => {
-//   console.log("Message received in foreground:", payload);
-//   const notificationTitle = payload.notification?.title || "Aquarium Alert";
-//   const notificationOptions = {
-//     body: payload.notification?.body,
-//     icon: "/pwa-192x192.png",
-//     tag: "aquarium-notification",
-//     requireInteraction: true,
-//   };
+// Listen for foreground messages (when app is open)
+onMessage(messaging, (payload) => {
+  console.log("Message received in foreground:", payload);
+  const notificationTitle = payload.notification?.title || "Aquarium Alert";
+  const notificationOptions: NotificationOptions = {
+    body: payload.notification?.body,
+    icon: "/pwa-192x192.png",
+    tag: "aquarium-notification",
+    requireInteraction: true,
+  };
 
-//   if (Notification.permission === "granted") {
-//     new Notification(notificationTitle, notificationOptions);
-//   } else {
-//     console.log("Notification permission not granted");
-//   }
-// });
+  if (Notification.permission === "granted") {
+    new Notification(notificationTitle, notificationOptions);
+  } else {
+    console.log("Notification permission not granted");
+  }
+});
 
 export default app;
