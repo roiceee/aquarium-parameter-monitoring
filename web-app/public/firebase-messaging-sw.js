@@ -22,6 +22,8 @@ firebase.initializeApp({
   messagingSenderId: "1037054047078",
   appId: "1:1037054047078:web:a453f7f04021b85f808ea7",
   measurementId: "G-5GT6ELH2CQ",
+  vapidKey:
+    "BJej_joq-UOKjwyTfM0vS9NCRu8JDe-h_nibElmWKEtEdNEwrbBUEO0PuD73SP-YXFMObcwjYbxulscXbNqbH6M",
 });
 
 // Retrieve an instance of Firebase Messaging so that it can handle background
