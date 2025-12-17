@@ -3,10 +3,10 @@
 // are not available in the service worker.
 // Replace 10.13.2 with latest version of the Firebase JS SDK.
 importScripts(
-  "https://www.gstatic.com/firebasejs/12.7.0/firebase-app-compat.js"
+  "https://www.gstatic.com/firebasejs/12.6.0/firebase-app-compat.js"
 );
 importScripts(
-  "https://www.gstatic.com/firebasejs/12.7.0/firebase-messaging-compat.js"
+  "https://www.gstatic.com/firebasejs/12.6.0/firebase-messaging-compat.js"
 );
 
 // Initialize the Firebase app in the service worker by passing in
@@ -22,8 +22,6 @@ firebase.initializeApp({
   messagingSenderId: "1037054047078",
   appId: "1:1037054047078:web:a453f7f04021b85f808ea7",
   measurementId: "G-5GT6ELH2CQ",
-  vapidKey:
-    "BJej_joq-UOKjwyTfM0vS9NCRu8JDe-h_nibElmWKEtEdNEwrbBUEO0PuD73SP-YXFMObcwjYbxulscXbNqbH6M",
 });
 
 // Retrieve an instance of Firebase Messaging so that it can handle background

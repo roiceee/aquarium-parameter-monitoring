@@ -1,8 +1,8 @@
-import { onRequest } from "firebase-functions/https";
+import {onRequest} from "firebase-functions/https";
 import * as logger from "firebase-functions/logger";
-import { getMessaging } from "firebase-admin/messaging";
-import { TOPIC } from "./constants";
-import { app } from "./index";
+import {getMessaging} from "firebase-admin/messaging";
+import {TOPIC} from "./constants";
+import {app} from "./index";
 
 /**
  * HTTP endpoint to subscribe FCM token to alerts topic
@@ -17,7 +17,7 @@ export const subscribeToTopic = onRequest(
       return;
     }
 
-    const { token } = req.body;
+    const {token} = req.body;
 
     if (!token) {
       res.status(400).send("Missing registration token");

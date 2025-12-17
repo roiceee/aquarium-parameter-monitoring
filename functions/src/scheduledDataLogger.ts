@@ -1,8 +1,8 @@
-import { onSchedule } from "firebase-functions/v2/scheduler";
-import { getDatabase } from "firebase-admin/database";
-import { getFirestore, FieldValue } from "firebase-admin/firestore";
-import { app } from "./index";
-import type { SensorData } from "./types";
+import {onSchedule} from "firebase-functions/v2/scheduler";
+import {getDatabase} from "firebase-admin/database";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
+import {app} from "./index";
+import type {SensorData} from "./types";
 
 /**
  * Scheduled function that logs sensor data to Firestore every minute

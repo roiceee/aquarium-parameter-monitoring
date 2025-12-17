@@ -96,14 +96,8 @@ export const checkSensorThresholds = onValueWritten(
             tag: `${type}-${level}`,
           },
           fcmOptions: {
-            link: "/",
+            link: "https://aquamonitor.roice.xyz",
           },
-        },
-        data: {
-          type,
-          level,
-          currentValue: currentValue.toString(),
-          thresholdValue: thresholdValue.toString(),
         },
       };
 
