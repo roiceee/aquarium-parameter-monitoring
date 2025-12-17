@@ -13,10 +13,10 @@ importScripts(
 // your app's Firebase config object.
 // https://firebase.google.com/docs/web/setup#config-object
 firebase.initializeApp({
-  apiKey: "AIzaSyB2MTe7Dgrl0NC2eUBDdzjikaLO_bYJYV4",
+  apiKey: "AIzaSyBwZSGGek_bVCuJw08hgkkpcLc4ybA12Gs",
   authDomain: "aquarium-monitoring-bd878.firebaseapp.com",
   databaseURL:
-    "https://aquarium-monitoring-bd878-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    "https://aquarium-monitoring-bd878-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "aquarium-monitoring-bd878",
   storageBucket: "aquarium-monitoring-bd878.firebasestorage.app",
   messagingSenderId: "1037054047078",
