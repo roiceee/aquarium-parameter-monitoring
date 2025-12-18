@@ -193,7 +193,7 @@ export default function App() {
                 unit="°C"
                 min={thresholds.temperature.min}
                 max={thresholds.temperature.max}
-                decimals={1}
+                decimals={2}
                 icon="thermometer"
                 color="blue"
               />
@@ -203,7 +203,7 @@ export default function App() {
                 unit="ppm"
                 min={thresholds.tds.min}
                 max={thresholds.tds.max}
-                decimals={0}
+                decimals={2}
                 icon="waves"
                 color="indigo"
               />
