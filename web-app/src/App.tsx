@@ -1,6 +1,6 @@
 import { signInAnonymously } from "firebase/auth";
 import { onValue, ref, set } from "firebase/database";
-import { Droplets, Settings, BarChart3 } from "lucide-react";
+import { Droplets, Settings, BarChart3, Volume2, VolumeX } from "lucide-react";
 import { useEffect, useState } from "react";
 import { SensorCard } from "./components/SensorCard.tsx";
 import { StatusAlert } from "./components/StatusAlert.tsx";
@@ -31,6 +31,8 @@ export default function App() {
     temperature: { min: 22, max: 28 },
     tds: { min: 150, max: 400 },
   });
+
+  const [beepEnabled, setBeepEnabled] = useState<boolean>(true);
 
   // Fetch sensor data from Firebase Realtime Database
   useEffect(() => {
@@ -73,6 +75,18 @@ export default function App() {
           },
         });
       }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  // Fetch beep setting from Firebase Realtime Database
+  useEffect(() => {
+    const beepRef = ref(database, "beep/isOn");
+
+    const unsubscribe = onValue(beepRef, (snapshot) => {
+      const isOn = snapshot.val();
+      setBeepEnabled(isOn ?? true); // Default to true if not set
     });
 
     return () => unsubscribe();
@@ -129,6 +143,12 @@ export default function App() {
     setThresholds(newThresholds);
   };
 
+  // Function to toggle beep on/off
+  const handleToggleBeep = () => {
+    const beepRef = ref(database, "beep/isOn");
+    set(beepRef, !beepEnabled);
+  };
+
   return (
     <div className="">
       <div className="max-w-lg  mx-auto">
@@ -144,6 +164,19 @@ export default function App() {
               </h2>
             </div>
             <div className="flex gap-2">
+              <Button
+                size={"icon-lg"}
+                variant={beepEnabled ? "default" : "secondary"}
+                onClick={handleToggleBeep}
+                aria-label={beepEnabled ? "Beep On" : "Beep Off"}
+                title={beepEnabled ? "Beep: ON" : "Beep: OFF"}
+              >
+                {beepEnabled ? (
+                  <Volume2 className="w-5 h-5" />
+                ) : (
+                  <VolumeX className="w-5 h-5" />
+                )}
+              </Button>
               <Button
                 size={"icon-lg"}
                 variant={viewMode === "analytics" ? "default" : "secondary"}
