@@ -1,0 +1,4 @@
+# Aquarium Monitor - Lo-Fi Prototype
+
+User-agent: *
+Disallow: /

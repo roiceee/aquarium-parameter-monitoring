@@ -13,12 +13,22 @@ function getAlertMessage(
     level === "low" ? "below" : "above"
   } threshold. Current: ${currentValue}, Threshold: ${thresholdValue}`;
 
-  // Add specific recommendations for TDS
+  // Add specific recommendations based on sensor type
   if (type === "tds") {
     message +=
       level === "low"
         ? ". Consider water changes to increase mineral content."
         : ". Consider water changes to reduce mineral buildup.";
+  } else if (type === "temperature") {
+    message +=
+      level === "low"
+        ? ". Check heater functionality and room temperature."
+        : ". Increase aeration, reduce lighting, or check cooling system.";
+  } else if (type === "ph") {
+    message +=
+      level === "low"
+        ? ". Add pH buffer or baking soda gradually to raise pH."
+        : ". Perform water change or add pH down solution to lower pH.";
   }
 
   return message;
