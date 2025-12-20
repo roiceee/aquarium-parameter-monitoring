@@ -15,9 +15,12 @@ import {
   ThermometerSun,
   Beaker,
   Trash2,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
 import type { SensorLog } from "../types/index";
 import { fetchSensorLogs, clearSensorLogs } from "../lib/firestoreUtils";
+import { exportToCSV, exportToXLSX } from "../lib/exportUtils";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
@@ -106,7 +109,7 @@ export function Analytics() {
 
   return (
     <div className="space-y-6">
-      {/* Header with clear button */}
+      {/* Header with export and clear buttons */}
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
@@ -114,14 +117,34 @@ export function Analytics() {
             {logs.length} data points collected
           </p>
         </div>
-        <Button
-          variant="destructive"
-          onClick={() => setShowConfirmDialog(true)}
-          disabled={logs.length === 0}
-        >
-          <Trash2 className="w-4 h-4 mr-2" />
-          Clear Data
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => exportToCSV(logs)}
+            disabled={logs.length === 0}
+            title="Export to CSV"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            CSV
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => exportToXLSX(logs)}
+            disabled={logs.length === 0}
+            title="Export to Excel"
+          >
+            <FileSpreadsheet className="w-4 h-4 mr-2" />
+            XLSX
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => setShowConfirmDialog(true)}
+            disabled={logs.length === 0}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Clear Data
+          </Button>
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -304,7 +327,29 @@ export function Analytics() {
           {/* Data Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Readings</CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle>Recent Readings</CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToCSV(logs)}
+                    disabled={logs.length === 0}
+                  >
+                    <Download className="w-3 h-3 mr-1" />
+                    CSV
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportToXLSX(logs)}
+                    disabled={logs.length === 0}
+                  >
+                    <FileSpreadsheet className="w-3 h-3 mr-1" />
+                    XLSX
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
